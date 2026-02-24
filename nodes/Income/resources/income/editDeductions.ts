@@ -25,6 +25,7 @@ export const description: INodeProperties[] = [
 		displayName: 'Update Fields',
 		name: 'updateFields',
 		type: 'collection',
+		placeholder: 'Add Field',
 		default: {},
 		displayOptions: { show: { resource: ['income'], operation: ['editDeductions'] } },
 		options: [
@@ -33,14 +34,51 @@ export const description: INodeProperties[] = [
 				name: 'custom_deduction_lines',
 				type: 'string',
 				default: '',
-				description: 'Base64 encoded deduction lines data',
+				placeholder: 'phi_giam_tru:name.0-budget.1-outflow_code.2-amount_excl.3-tax_policy.4',
+				description: 'Custom deduction lines mapping (format: table_name:field.0-field.1-...)',
 			},
 			{
 				displayName: 'Fee Record Date',
 				name: 'fee_record_date',
 				type: 'string',
 				default: '',
-				description: 'Record date for fees',
+				placeholder: '01/01/2024',
+				description: 'Record date for fees (DD/MM/YYYY)',
+			},
+		],
+	},
+	{
+		displayName: 'Encoded Table Fields',
+		name: 'encodedTables',
+		type: 'fixedCollection',
+		typeOptions: {
+			multipleValues: true,
+		},
+		placeholder: 'Add Encoded Table',
+		default: {},
+		displayOptions: { show: { resource: ['income'], operation: ['editDeductions'] } },
+		description: 'Encoded table data (base64)',
+		options: [
+			{
+				name: 'tables',
+				displayName: 'Table',
+				values: [
+					{
+						displayName: 'Table Name',
+						name: 'name',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., phi_giam_tru',
+						description: 'Name of the encoded table field',
+					},
+					{
+						displayName: 'Encoded Value',
+						name: 'value',
+						type: 'string',
+						default: '',
+						description: 'Base64 encoded table data',
+					},
+				],
 			},
 		],
 	},
@@ -59,7 +97,7 @@ export const description: INodeProperties[] = [
 				operation: ['editDeductions'],
 			},
 		},
-		description: 'Additional custom fields',
+		description: 'Custom fields (with custom_ prefix)',
 		options: [
 			{
 				name: 'fields',
@@ -70,7 +108,8 @@ export const description: INodeProperties[] = [
 						name: 'name',
 						type: 'string',
 						default: '',
-						description: 'Custom field name',
+						placeholder: 'e.g., custom_field_name',
+						description: 'Custom field name (must start with custom_)',
 					},
 					{
 						displayName: 'Field Value',
@@ -91,7 +130,18 @@ export async function execute(this: IExecuteFunctions, index: number): Promise<I
 	const username = this.getNodeParameter('username', index) as string;
 	const id = this.getNodeParameter('id', index) as number;
 	const updateFields = this.getNodeParameter('updateFields', index, {}) as IDataObject;
+	const encodedTables = this.getNodeParameter('encodedTables', index, {}) as IDataObject;
 	const customFields = this.getNodeParameter('customFields', index, {}) as IDataObject;
+
+	// Process encoded table fields
+	const encodedTablesData: IDataObject = {};
+	if (encodedTables.tables && Array.isArray(encodedTables.tables)) {
+		for (const table of encodedTables.tables as Array<{name: string; value: string}>) {
+			if (table.name && table.value) {
+				encodedTablesData[table.name] = table.value;
+			}
+		}
+	}
 
 	// Process custom fields
 	const customFieldsData: IDataObject = {};
@@ -107,6 +157,7 @@ export async function execute(this: IExecuteFunctions, index: number): Promise<I
 		username,
 		id,
 		...updateFields,
+		...encodedTablesData,
 		...customFieldsData,
 	});
 

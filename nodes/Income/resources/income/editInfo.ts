@@ -37,11 +37,11 @@ export const description: INodeProperties[] = [
 		default: {},
 		displayOptions: { show: { resource: ['income'], operation: ['editInfo'] } },
 		options: [
-			{ displayName: 'Income Content', name: 'income_content', type: 'string', default: '', description: 'Income description or content' },
-			{ displayName: 'Income Followers', name: 'income_followers', type: 'string', default: '', description: 'Comma-separated list of follower usernames' },
-			{ displayName: 'Income Name', name: 'income_name', type: 'string', default: '', description: 'Name of the income' },
-			{ displayName: 'Income Since', name: 'income_since', type: 'string', default: '', description: 'Income start date' },
-			{ displayName: 'Transform Categories Keys', name: 'transform_categories_keys', type: 'string', default: '', description: 'Category transformation keys' },
+		{ displayName: 'Income Content', name: 'income_content', type: 'string', typeOptions: { rows: 4 }, default: '', description: 'Income description or content' },
+		{ displayName: 'Income Followers', name: 'income_followers', type: 'string', default: '', description: 'Comma-separated list of follower usernames' },
+		{ displayName: 'Income Name', name: 'income_name', type: 'string', default: '', description: 'Name of the income' },
+		{ displayName: 'Income Since', name: 'income_since', type: 'string', default: '', placeholder: '01/01/2024', description: 'Income start date (DD/MM/YYYY or timestamp)' },
+		{ displayName: 'Transform Categories Keys', name: 'transform_categories_keys', type: 'string', default: '', placeholder: 'khu_vuc-khuvuc', description: 'Category transformation keys (e.g., khu_vuc-khuvuc)' },
 			{ displayName: 'Transform Files Keys', name: 'transform_files_keys', type: 'string', default: '', description: 'File transformation keys' },
 		],
 	},
@@ -60,7 +60,7 @@ export const description: INodeProperties[] = [
 				operation: ['editInfo'],
 			},
 		},
-		description: 'Additional custom fields for the income',
+		description: 'Custom fields (with custom_ prefix)',
 		options: [
 			{
 				name: 'fields',
@@ -71,8 +71,8 @@ export const description: INodeProperties[] = [
 						name: 'name',
 						type: 'string',
 						default: '',
-						placeholder: 'e.g., custom_field_1',
-						description: 'Custom field name',
+					placeholder: 'e.g., custom_tinh_trang_nhan_hang',
+					description: 'Custom field name (must start with custom_)',
 					},
 					{
 						displayName: 'Field Value',

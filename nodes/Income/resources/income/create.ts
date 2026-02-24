@@ -160,7 +160,8 @@ export const description: INodeProperties[] = [
 				name: 'custom_item_lines',
 				type: 'string',
 				default: '',
-				description: 'Custom item lines mapping (e.g., san_pham:name.0-code.1-amount_excl.2-tax_policy.3)',
+				placeholder: 'san_pham:name.0-code.1-amount_excl.2-tax_policy.3',
+				description: 'Item lines table mapping (format: table_name:field.0-field.1-...)',
 			},
 			{
 				displayName: 'Single Code',
@@ -188,7 +189,8 @@ export const description: INodeProperties[] = [
 				name: 'custom_deduction_lines',
 				type: 'string',
 				default: '',
-				description: 'Custom deduction lines mapping',
+				placeholder: 'phi_giam_tru:name.0-budget.1-outflow_code.2-amount_excl.3-tax_policy.4',
+				description: 'Deduction lines table mapping (format: table_name:field.0-field.1-...)',
 			},
 			{
 				displayName: 'Fee Record Date',
@@ -202,7 +204,8 @@ export const description: INodeProperties[] = [
 				name: 'custom_due_date_lines',
 				type: 'string',
 				default: '',
-				description: 'Custom due date lines mapping',
+				placeholder: 'cac_dot_du_thu:due_date.0-to_be_received.1',
+				description: 'Due date lines table mapping (format: table_name:field.0-field.1-...)',
 			},
 			{
 				displayName: 'Due Date',
@@ -245,7 +248,8 @@ export const description: INodeProperties[] = [
 				name: 'transform_categories_keys',
 				type: 'string',
 				default: '',
-				description: 'Category transformation keys',
+				placeholder: 'khu_vuc-khuvuc',
+				description: 'Category transformation keys (e.g., khu_vuc-khuvuc)',
 			},
 		],
 	},
@@ -264,7 +268,7 @@ export const description: INodeProperties[] = [
 				operation: ['create'],
 			},
 		},
-		description: 'Custom fields specific to the income type',
+		description: 'Custom fields (with custom_ prefix)',
 		options: [
 			{
 				name: 'fields',
@@ -275,8 +279,8 @@ export const description: INodeProperties[] = [
 						name: 'name',
 						type: 'string',
 						default: '',
-						placeholder: 'e.g., custom_field_1, income_note',
-						description: 'Custom field name',
+						placeholder: 'e.g., custom_tinh_trang_nhan_hang, custom_field_name',
+						description: 'Custom field name (must start with custom_)',
 					},
 					{
 						displayName: 'Field Value',

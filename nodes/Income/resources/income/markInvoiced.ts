@@ -31,32 +31,54 @@ export const description: INodeProperties[] = [
 		description: 'Unique identifier of the income',
 	},
 	{
-		displayName: 'Additional Fields',
-		name: 'additionalFields',
+		displayName: 'Update Fields',
+		name: 'updateFields',
 		type: 'collection',
+		placeholder: 'Add Field',
 		default: {},
 		displayOptions: { show: { resource: ['income'], operation: ['markInvoiced'] } },
 		options: [
-			{
-				displayName: 'Custom File Hoa Don',
-				name: 'custom_file_hoa_don',
-				type: 'string',
-				default: '',
-				description: 'Invoice file reference',
-			},
-			{
-				displayName: 'Custom Tinh Trang Xuat Hoa Don',
-				name: 'custom_tinh_trang_xuat_hoa_don',
-				type: 'string',
-				default: '',
-				description: 'Invoice issuance status',
-			},
 			{
 				displayName: 'Income Since',
 				name: 'income_since',
 				type: 'string',
 				default: '',
 				description: 'Income start date',
+			},
+		],
+	},
+	{
+		displayName: 'Custom Fields',
+		name: 'customFields',
+		type: 'fixedCollection',
+		typeOptions: {
+			multipleValues: true,
+		},
+		placeholder: 'Add Custom Field',
+		default: {},
+		displayOptions: { show: { resource: ['income'], operation: ['markInvoiced'] } },
+		description: 'Custom fields (with custom_ prefix)',
+		options: [
+			{
+				name: 'fields',
+				displayName: 'Field',
+				values: [
+					{
+						displayName: 'Field Name',
+						name: 'name',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., custom_file_hoa_don, custom_tinh_trang_xuat_hoa_don',
+						description: 'Custom field name (must start with custom_)',
+					},
+					{
+						displayName: 'Field Value',
+						name: 'value',
+						type: 'string',
+						default: '',
+						description: 'Value of the custom field',
+					},
+				],
 			},
 		],
 	},
@@ -68,12 +90,24 @@ export async function execute(this: IExecuteFunctions, index: number): Promise<I
 	const incomeTypeToken = this.getNodeParameter('incomeTypeToken', index) as string;
 	const creatorUsername = this.getNodeParameter('creator_username', index) as string;
 	const uuid = this.getNodeParameter('uuid', index) as string;
-	const additionalFields = this.getNodeParameter('additionalFields', index, {}) as IDataObject;
+	const updateFields = this.getNodeParameter('updateFields', index, {}) as IDataObject;
+	const customFields = this.getNodeParameter('customFields', index, {}) as IDataObject;
+
+	// Process custom fields
+	const customFieldsData: IDataObject = {};
+	if (customFields.fields && Array.isArray(customFields.fields)) {
+		for (const field of customFields.fields as Array<{name: string; value: string}>) {
+			if (field.name && field.value) {
+				customFieldsData[field.name] = field.value;
+			}
+		}
+	}
 
 	const body = cleanBody({
 		creator_username: creatorUsername,
 		uuid,
-		...additionalFields,
+		...updateFields,
+		...customFieldsData,
 	});
 	
 	const endpoint = `/webhook/income/mark.invoiced/${incomeTypeToken}`;
