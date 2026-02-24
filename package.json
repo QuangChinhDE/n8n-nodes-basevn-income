@@ -1,0 +1,54 @@
+{
+	"name": "n8n-nodes-basevn-income",
+	"version": "0.1.0",
+	"description": "n8n node for BaseVN - App Income integration",
+	"license": "MIT",
+	"homepage": "",
+	"keywords": [
+		"n8n-community-node-package",
+		"basevn",
+		"income-management",
+		"api-integration"
+	],
+	"author": {
+		"name": "BaseVN",
+		"email": "support@basevn.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": ""
+	},
+	"scripts": {
+		"build": "n8n-node build",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"release": "npm run build && npm publish --access public",
+		"prepublishOnly": "echo 'Use npm run release'"
+	},
+	"files": [
+		"dist"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"strict": true,
+		"credentials": [
+			"dist/credentials/IncomeApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Income/Income.node.js",
+			"dist/nodes/Income/IncomeTrigger.node.js"
+		]
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "*",
+		"eslint": "9.32.0",
+		"prettier": "3.6.2",
+		"release-it": "^19.0.4",
+		"typescript": "5.9.2"
+	},
+	"dependencies": {
+		"n8n-workflow": "*"
+	}
+}
