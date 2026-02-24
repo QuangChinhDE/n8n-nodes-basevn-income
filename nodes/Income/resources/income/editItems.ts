@@ -1,42 +1,120 @@
-import type { IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';
+import type { IDataObject, IExecuteFunctions, INodeExecutionData, INodeProperties } from 'n8n-workflow';
 import { incomeApiRequest } from '../../shared/transport';
-import { cleanBody } from '../../shared/utils';
+import { cleanBody, processResponse } from '../../shared/utils';
 
 export const description: INodeProperties[] = [
-{
-displayName: 'Username',
-name: 'username',
-type: 'string',
-required: true,
-displayOptions: { show: { resource: ['income'], operation: ['editItems'] } },
-default: '',
-},
-{
-displayName: 'Income ID',
-name: 'id',
-type: 'number',
-required: true,
-displayOptions: { show: { resource: ['income'], operation: ['editItems'] } },
-default: 0,
-},
-{
-displayName: 'Custom Item Lines',
-name: 'custom_item_lines',
-type: 'string',
-displayOptions: { show: { resource: ['income'], operation: ['editItems'] } },
-default: '',
-description: 'Base64 encoded item lines data',
-},
+	{
+		displayName: 'Username',
+		name: 'username',
+		type: 'string',
+		required: true,
+		displayOptions: { show: { resource: ['income'], operation: ['editItems'] } },
+		default: '',
+		description: 'Username of the person editing items',
+	},
+	{
+		displayName: 'Income ID',
+		name: 'id',
+		type: 'number',
+		required: true,
+		displayOptions: { show: { resource: ['income'], operation: ['editItems'] } },
+		default: 0,
+		description: 'ID of the income to edit',
+	},
+	{
+		displayName: 'Update Fields',
+		name: 'updateFields',
+		type: 'collection',
+		default: {},
+		displayOptions: { show: { resource: ['income'], operation: ['editItems'] } },
+		options: [
+			{
+				displayName: 'Custom Item Lines',
+				name: 'custom_item_lines',
+				type: 'string',
+				default: '',
+				description: 'Base64 encoded item lines data',
+			},
+		],
+	},
+	{
+		displayName: 'Custom Fields',
+		name: 'customFields',
+		type: 'fixedCollection',
+		typeOptions: {
+			multipleValues: true,
+		},
+		placeholder: 'Add Custom Field',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['income'],
+				operation: ['editItems'],
+			},
+		},
+		description: 'Additional custom fields',
+		options: [
+			{
+				name: 'fields',
+				displayName: 'Field',
+				values: [
+					{
+						displayName: 'Field Name',
+						name: 'name',
+						type: 'string',
+						default: '',
+						description: 'Custom field name',
+					},
+					{
+						displayName: 'Field Value',
+						name: 'value',
+						type: 'string',
+						default: '',
+						description: 'Value of the custom field',
+					},
+				],
+			},
+		],
+	},
 ];
 
 export async function execute(this: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
-const username = this.getNodeParameter('username', index) as string;
-const id = this.getNodeParameter('id', index) as number;
-const customItemLines = this.getNodeParameter('custom_item_lines', index, '') as string;
+	const returnData: INodeExecutionData[] = [];
+	
+	const username = this.getNodeParameter('username', index) as string;
+	const id = this.getNodeParameter('id', index) as number;
+	const updateFields = this.getNodeParameter('updateFields', index, {}) as IDataObject;
+	const customFields = this.getNodeParameter('customFields', index, {}) as IDataObject;
 
-const body = cleanBody({ username, id, custom_item_lines: customItemLines });
-const endpoint = '/income/adjust.items';
-const response = await incomeApiRequest.call(this, 'POST', endpoint, body);
+	// Process custom fields
+	const customFieldsData: IDataObject = {};
+	if (customFields.fields && Array.isArray(customFields.fields)) {
+		for (const field of customFields.fields as Array<{name: string; value: string}>) {
+			if (field.name && field.value) {
+				customFieldsData[field.name] = field.value;
+			}
+		}
+	}
 
-return [{ json: response, pairedItem: index }];
+	const body = cleanBody({
+		username,
+		id,
+		...updateFields,
+		...customFieldsData,
+	});
+
+	const endpoint = '/income/adjust.items';
+	const response = await incomeApiRequest.call(this, 'POST', endpoint, body);
+	
+	if (response.code === 1) {
+		const result = processResponse(response);
+		returnData.push({
+			json: result,
+			pairedItem: index,
+		});
+	} else {
+		throw new Error(`API Error: ${response.message || 'Unknown error'}`);
+	}
+
+	return returnData;
 }

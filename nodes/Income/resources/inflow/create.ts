@@ -144,9 +144,10 @@ export const description: INodeProperties[] = [
 				operation: ['create'],
 			},
 		},
+		description: 'Additional custom fields for the inflow',
 		options: [
 			{
-				name: 'field',
+				name: 'fields',
 				displayName: 'Field',
 				values: [
 					{
@@ -154,7 +155,7 @@ export const description: INodeProperties[] = [
 						name: 'name',
 						type: 'string',
 						default: '',
-						placeholder: 'khu_vuc',
+						placeholder: 'e.g., khu_vuc, custom_note',
 						description: 'Custom field name',
 					},
 					{
@@ -162,7 +163,7 @@ export const description: INodeProperties[] = [
 						name: 'value',
 						type: 'string',
 						default: '',
-						description: 'Custom field value',
+						description: 'Value of the custom field',
 					},
 				],
 			},
@@ -184,6 +185,16 @@ export async function execute(
 	const additionalFields = this.getNodeParameter('additionalFields', index, {}) as IDataObject;
 	const customFields = this.getNodeParameter('customFields', index, {}) as IDataObject;
 
+	// Process custom fields
+	const customFieldsData: IDataObject = {};
+	if (customFields.fields && Array.isArray(customFields.fields)) {
+		for (const field of customFields.fields as Array<{name: string; value: string}>) {
+			if (field.name && field.value) {
+				customFieldsData[field.name] = field.value;
+			}
+		}
+	}
+
 	const body: IDataObject = cleanBody({
 		username,
 		name,
@@ -191,16 +202,8 @@ export async function execute(
 		receive_date: receiveDate,
 		cash_account_id: cashAccountId,
 		...additionalFields,
+		...customFieldsData,
 	});
-
-	// Add custom fields
-	if (customFields.field && Array.isArray(customFields.field)) {
-		customFields.field.forEach((field: IDataObject) => {
-			if (field.name && field.value) {
-				body[field.name as string] = field.value;
-			}
-		});
-	}
 
 	const response = await incomeApiRequest.call(this, 'POST', '/inflow/create', body);
 	

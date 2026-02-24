@@ -12,7 +12,6 @@ export const description: INodeProperties[] = [
 		displayName: 'Income Type Token',
 		name: 'incomeTypeToken',
 		type: 'string',
-		typeOptions: { password: true },
 		required: true,
 		displayOptions: {
 			show: {
@@ -21,7 +20,7 @@ export const description: INodeProperties[] = [
 			},
 		},
 		default: '',
-		description: 'Income type token from Base Income > Settings > Income Types > Webhooks',
+		description: 'Token for the income type (used in webhook URL)',
 	},
 	{
 		displayName: 'Name',
@@ -265,9 +264,10 @@ export const description: INodeProperties[] = [
 				operation: ['create'],
 			},
 		},
+		description: 'Custom fields specific to the income type',
 		options: [
 			{
-				name: 'field',
+				name: 'fields',
 				displayName: 'Field',
 				values: [
 					{
@@ -275,6 +275,7 @@ export const description: INodeProperties[] = [
 						name: 'name',
 						type: 'string',
 						default: '',
+						placeholder: 'e.g., custom_field_1, income_note',
 						description: 'Custom field name',
 					},
 					{
@@ -282,7 +283,7 @@ export const description: INodeProperties[] = [
 						name: 'value',
 						type: 'string',
 						default: '',
-						description: 'Custom field value',
+						description: 'Value of the custom field',
 					},
 				],
 			},
@@ -303,9 +304,10 @@ export const description: INodeProperties[] = [
 				operation: ['create'],
 			},
 		},
+		description: 'Encoded table data fields (base64)',
 		options: [
 			{
-				name: 'table',
+				name: 'tables',
 				displayName: 'Table',
 				values: [
 					{
@@ -313,8 +315,8 @@ export const description: INodeProperties[] = [
 						name: 'name',
 						type: 'string',
 						default: '',
-						placeholder: 'san_pham',
-						description: 'Encoded table name (e.g., san_pham, phi_giam_tru, cac_dot_du_thu, inflows)',
+						placeholder: 'e.g., san_pham, phi_giam_tru, cac_dot_du_thu, inflows',
+						description: 'Name of the encoded table field',
 					},
 					{
 						displayName: 'Encoded Value',
@@ -342,29 +344,33 @@ export async function execute(
 	const customFields = this.getNodeParameter('customFields', index, {}) as IDataObject;
 	const encodedTables = this.getNodeParameter('encodedTables', index, {}) as IDataObject;
 
+	// Process custom fields
+	const customFieldsData: IDataObject = {};
+	if (customFields.fields && Array.isArray(customFields.fields)) {
+		for (const field of customFields.fields as Array<{name: string; value: string}>) {
+			if (field.name && field.value) {
+				customFieldsData[field.name] = field.value;
+			}
+		}
+	}
+
+	// Process encoded table fields
+	const encodedTablesData: IDataObject = {};
+	if (encodedTables.tables && Array.isArray(encodedTables.tables)) {
+		for (const table of encodedTables.tables as Array<{name: string; value: string}>) {
+			if (table.name && table.value) {
+				encodedTablesData[table.name] = table.value;
+			}
+		}
+	}
+
 	const body: IDataObject = cleanBody({
 		name,
 		creator_username: creatorUsername,
 		...additionalFields,
+		...customFieldsData,
+		...encodedTablesData,
 	});
-
-	// Add custom fields
-	if (customFields.field && Array.isArray(customFields.field)) {
-		customFields.field.forEach((field: IDataObject) => {
-			if (field.name && field.value) {
-				body[field.name as string] = field.value;
-			}
-		});
-	}
-
-	// Add encoded table fields
-	if (encodedTables.table && Array.isArray(encodedTables.table)) {
-		encodedTables.table.forEach((table: IDataObject) => {
-			if (table.name && table.value) {
-				body[table.name as string] = table.value;
-			}
-		});
-	}
 
 	const endpoint = `/webhook/income/create.waiting.receive/${incomeTypeToken}`;
 	const response = await incomeApiRequest.call(this, 'POST', endpoint, body);
