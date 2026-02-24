@@ -254,6 +254,47 @@ export const description: INodeProperties[] = [
 		],
 	},
 	{
+		displayName: 'Category Values',
+		name: 'categoryValues',
+		type: 'fixedCollection',
+		typeOptions: {
+			multipleValues: true,
+		},
+		placeholder: 'Add Category Value',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['income'],
+				operation: ['create'],
+			},
+		},
+		description: 'Category field values (used with transform_categories_keys)',
+		options: [
+			{
+				name: 'values',
+				displayName: 'Category',
+				values: [
+					{
+						displayName: 'Category Name',
+						name: 'name',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., khu_vuc, loai_hinh',
+						description: 'Category field name',
+					},
+					{
+						displayName: 'Category Value',
+						name: 'value',
+						type: 'string',
+						default: '',
+						placeholder: 'e.g., Miền Bắc',
+						description: 'Value of the category',
+					},
+				],
+			},
+		],
+	},
+	{
 		displayName: 'Custom Fields',
 		name: 'customFields',
 		type: 'fixedCollection',
@@ -345,8 +386,19 @@ export async function execute(
 	const name = this.getNodeParameter('name', index) as string;
 	const creatorUsername = this.getNodeParameter('creator_username', index) as string;
 	const additionalFields = this.getNodeParameter('additionalFields', index, {}) as IDataObject;
+	const categoryValues = this.getNodeParameter('categoryValues', index, {}) as IDataObject;
 	const customFields = this.getNodeParameter('customFields', index, {}) as IDataObject;
 	const encodedTables = this.getNodeParameter('encodedTables', index, {}) as IDataObject;
+
+	// Process category values
+	const categoryValuesData: IDataObject = {};
+	if (categoryValues.values && Array.isArray(categoryValues.values)) {
+		for (const category of categoryValues.values as Array<{name: string; value: string}>) {
+			if (category.name && category.value) {
+				categoryValuesData[category.name] = category.value;
+			}
+		}
+	}
 
 	// Process custom fields
 	const customFieldsData: IDataObject = {};
@@ -372,6 +424,7 @@ export async function execute(
 		name,
 		creator_username: creatorUsername,
 		...additionalFields,
+		...categoryValuesData,
 		...customFieldsData,
 		...encodedTablesData,
 	});
