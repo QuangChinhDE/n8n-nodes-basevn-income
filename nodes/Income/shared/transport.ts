@@ -14,15 +14,24 @@ export async function incomeApiRequest(
 	const domain = credentials.domain as string;
 	const accessToken = credentials.accessToken as string;
 
-	// Add access_token_v2 to body (required by API)
-	const requestBody = {
-		access_token_v2: accessToken,
-		...body,
-	};
+	// Determine if this is a webhook endpoint or extapi endpoint
+	const isWebhookEndpoint = endpoint.startsWith('/webhook/');
+	
+	// For extapi endpoints, add access_token_v2 to body
+	// For webhook endpoints, don't add access_token_v2 (token is in URL)
+	const requestBody = isWebhookEndpoint 
+		? { ...body }
+		: { access_token_v2: accessToken, ...body };
+
+	// Build the full URL based on endpoint type
+	const baseUrl = `https://income.${domain}`;
+	const fullUrl = isWebhookEndpoint 
+		? `${baseUrl}${endpoint}`  // webhook: full path already in endpoint
+		: `${baseUrl}/extapi/v1${endpoint}`;  // extapi: add /extapi/v1 prefix
 
 	const options = {
 		method,
-		url: `https://income.${domain}/extapi/v1${endpoint}`,
+		url: fullUrl,
 		headers: {
 			'Content-Type': 'application/x-www-form-urlencoded',
 		},
