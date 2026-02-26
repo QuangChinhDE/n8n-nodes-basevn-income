@@ -51,6 +51,48 @@ export const description: INodeProperties[] = [
 		description: 'Username of the creator',
 	},
 	{
+		displayName: 'Customer Name',
+		name: 'customer_name',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['income'],
+				operation: ['create'],
+			},
+		},
+		default: '',
+		description: 'Customer name (required)',
+	},
+	{
+		displayName: 'Revenue Unit',
+		name: 'revenue_unit',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['income'],
+				operation: ['create'],
+			},
+		},
+		default: '',
+		description: 'Revenue unit (required)',
+	},
+	{
+		displayName: 'Salesperson',
+		name: 'salesperson',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['income'],
+				operation: ['create'],
+			},
+		},
+		default: '',
+		description: 'Salesperson username (required)',
+	},
+	{
 		displayName: 'Additional Fields',
 		name: 'additionalFields',
 		type: 'collection',
@@ -77,12 +119,6 @@ export const description: INodeProperties[] = [
 				default: '',
 				placeholder: '01/01/2024',
 				description: 'Record date (DD/MM/YYYY)',
-			},
-			{
-				displayName: 'Customer Name',
-				name: 'customer_name',
-				type: 'string',
-				default: '',
 			},
 			{
 				displayName: 'Customer Tax Code',
@@ -137,23 +173,10 @@ export const description: INodeProperties[] = [
 				description: 'Invoice recipient phone',
 			},
 			{
-				displayName: 'Revenue Unit',
-				name: 'revenue_unit',
-				type: 'string',
-				default: '',
-			},
-			{
 				displayName: 'Revenue Center',
 				name: 'revenue_center',
 				type: 'string',
 				default: '',
-			},
-			{
-				displayName: 'Salesperson',
-				name: 'salesperson',
-				type: 'string',
-				default: '',
-				description: 'Salesperson username',
 			},
 			{
 				displayName: 'Custom Item Lines',
@@ -385,6 +408,9 @@ export async function execute(
 	const incomeTypeToken = this.getNodeParameter('incomeTypeToken', index) as string;
 	const name = this.getNodeParameter('name', index) as string;
 	const creatorUsername = this.getNodeParameter('creator_username', index) as string;
+	const customerName = this.getNodeParameter('customer_name', index) as string;
+	const revenueUnit = this.getNodeParameter('revenue_unit', index) as string;
+	const salesperson = this.getNodeParameter('salesperson', index) as string;
 	const additionalFields = this.getNodeParameter('additionalFields', index, {}) as IDataObject;
 	const categoryValues = this.getNodeParameter('categoryValues', index, {}) as IDataObject;
 	const customFields = this.getNodeParameter('customFields', index, {}) as IDataObject;
@@ -423,6 +449,9 @@ export async function execute(
 	const body: IDataObject = cleanBody({
 		name,
 		creator_username: creatorUsername,
+		customer_name: customerName,
+		revenue_unit: revenueUnit,
+		salesperson: salesperson,
 		...additionalFields,
 		...categoryValuesData,
 		...customFieldsData,

@@ -8,6 +8,20 @@ import { incomeApiRequest } from '../../shared/transport';
 import { cleanBody, processResponse } from '../../shared/utils';
 
 export const description: INodeProperties[] = [
+	{
+		displayName: 'Username',
+		name: 'username',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['income'],
+				operation: ['getAll'],
+			},
+		},
+		default: '',
+		description: 'Username (required)',
+	},
 {
 displayName: 'Filters',
 name: 'filters',
@@ -79,10 +93,11 @@ index: number,
 ): Promise<INodeExecutionData[]> {
 const returnData: INodeExecutionData[] = [];
 
+const username = this.getNodeParameter('username', index) as string;
 const filters = this.getNodeParameter('filters', index, {}) as IDataObject;
 const selector = this.getNodeParameter('responseSelector', index, 'incomes') as string;
 
-const body: IDataObject = cleanBody(filters);
+const body: IDataObject = cleanBody({ username, ...filters });
 const response = await incomeApiRequest.call(this, 'POST', '/incomes/get', body);
 
 if (response.code === 1) {

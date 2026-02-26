@@ -4,6 +4,15 @@ import { cleanBody, processResponse } from '../../shared/utils';
 
 export const description: INodeProperties[] = [
 	{
+		displayName: 'Income Type Token',
+		name: 'incomeTypeToken',
+		type: 'string',
+		required: true,
+		displayOptions: { show: { resource: ['income'], operation: ['editDeductions'] } },
+		default: '',
+		description: 'Token for the income type',
+	},
+	{
 		displayName: 'Username',
 		name: 'username',
 		type: 'string',
@@ -127,6 +136,7 @@ export const description: INodeProperties[] = [
 export async function execute(this: IExecuteFunctions, index: number): Promise<INodeExecutionData[]> {
 	const returnData: INodeExecutionData[] = [];
 	
+	const incomeTypeToken = this.getNodeParameter('incomeTypeToken', index) as string;
 	const username = this.getNodeParameter('username', index) as string;
 	const id = this.getNodeParameter('id', index) as number;
 	const updateFields = this.getNodeParameter('updateFields', index, {}) as IDataObject;
@@ -154,6 +164,7 @@ export async function execute(this: IExecuteFunctions, index: number): Promise<I
 	}
 
 	const body = cleanBody({
+		income_type_token: incomeTypeToken,
 		username,
 		id,
 		...updateFields,

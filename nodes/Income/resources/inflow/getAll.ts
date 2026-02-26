@@ -9,6 +9,20 @@ import { cleanBody, processResponse } from '../../shared/utils';
 
 export const description: INodeProperties[] = [
 	{
+		displayName: 'Username',
+		name: 'username',
+		type: 'string',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['inflow'],
+				operation: ['getAll'],
+			},
+		},
+		default: '',
+		description: 'Username (required)',
+	},
+	{
 		displayName: 'Additional Filters',
 		name: 'filters',
 		type: 'collection',
@@ -211,10 +225,11 @@ export async function execute(
 ): Promise<INodeExecutionData[]> {
 	const returnData: INodeExecutionData[] = [];
 	
+	const username = this.getNodeParameter('username', index) as string;
 	const filters = this.getNodeParameter('filters', index, {}) as IDataObject;
 	const selector = this.getNodeParameter('responseSelector', index, 'inflows') as string;
 
-	const body: IDataObject = cleanBody(filters);
+	const body: IDataObject = cleanBody({ username, ...filters });
 	const response = await incomeApiRequest.call(this, 'POST', '/inflows/get', body);
 	
 	if (response.code === 1) {

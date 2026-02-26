@@ -9,6 +9,20 @@ import { cleanBody, processResponse } from '../../shared/utils';
 
 export const description: INodeProperties[] = [
 	{
+		displayName: 'Updated From',
+		name: 'updated_from',
+		type: 'number',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['inflow'],
+				operation: ['getLastUpdate'],
+			},
+		},
+		default: 0,
+		description: 'Unix timestamp - updated from (required)',
+	},
+	{
 		displayName: 'Start Time',
 		name: 'start',
 		type: 'number',
@@ -93,12 +107,14 @@ export async function execute(
 ): Promise<INodeExecutionData[]> {
 	const returnData: INodeExecutionData[] = [];
 	
+	const updatedFrom = this.getNodeParameter('updated_from', index) as number;
 	const start = this.getNodeParameter('start', index) as number;
 	const end = this.getNodeParameter('end', index) as number;
 	const options = this.getNodeParameter('options', index, {}) as IDataObject;
 	const selector = this.getNodeParameter('responseSelector', index, 'inflows') as string;
 
 	const body: IDataObject = cleanBody({
+		updated_from: updatedFrom,
 		start,
 		end,
 		...options,

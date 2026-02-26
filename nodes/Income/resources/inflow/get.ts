@@ -30,7 +30,7 @@ export const description: INodeProperties[] = [
 			{ name: 'Full Response', value: '' },
 			{ name: 'Inflow Data', value: 'inflow' },
 		],
-		default: '',
+		default: 'inflow',
 		displayOptions: {
 			show: {
 				resource: ['inflow'],
@@ -48,7 +48,7 @@ export async function execute(
 	const returnData: INodeExecutionData[] = [];
 	
 	const id = this.getNodeParameter('id', index) as number;
-	const selector = this.getNodeParameter('responseSelector', index, '') as string;
+	const selector = this.getNodeParameter('responseSelector', index, 'inflow') as string;
 
 	const body: IDataObject = cleanBody({ id });
 	const response = await incomeApiRequest.call(this, 'POST', '/inflow/get', body);
